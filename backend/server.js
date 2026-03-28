@@ -18,11 +18,13 @@ app.get('/', (req, res) => {
 const projectsRoutes = require('./src/routes/projects');
 const skillsRoutes = require('./src/routes/skills');
 const messagesRoutes = require('./src/routes/messages');
+const profileRoutes = require('./src/routes/profile');
 
 // Use Routes
 app.use('/api/projects', projectsRoutes);
 app.use('/api/skills', skillsRoutes);
 app.use('/api/messages', messagesRoutes);
+app.use('/api/profile', profileRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {
@@ -35,6 +37,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong on the server!' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 API Server is running on http://localhost:${PORT}`);
-});
+if (require.main === module || process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 API Server is running on http://localhost:${PORT}`);
+  });
+}
+
+// Export the app for Netlify functions
+module.exports = app;

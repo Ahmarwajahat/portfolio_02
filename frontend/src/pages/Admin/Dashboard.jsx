@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../config/firebase';
 import { signOut } from 'firebase/auth';
-import { LogOut, Home, MessageSquare, Briefcase, Code, Plus, Trash2, Edit, X } from 'lucide-react';
+import { LogOut, Home, MessageSquare, Briefcase, Code, Plus, Trash2, Edit, X, User, Settings, Save } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -16,6 +16,12 @@ const Dashboard = () => {
   const [projects, setProjects] = useState([]);
   const [skills, setSkills] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [profile, setProfile] = useState(null);
+  const [profileForm, setProfileForm] = useState({
+    full_name: '', role_title: '', hero_image_url: '', about_text: '', about_image_url: '',
+    contact_email: '', contact_phone: '', contact_location: '', github_url: '', linkedin_url: '', twitter_url: ''
+  });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,15 +48,20 @@ const Dashboard = () => {
     try {
       const authConfig = { headers: { Authorization: `Bearer ${authToken}` } };
       
-      const [projRes, skillsRes, msgRes] = await Promise.all([
+      const [projRes, skillsRes, msgRes, profileRes] = await Promise.all([
         axios.get(`${API_URL}/projects`),
         axios.get(`${API_URL}/skills`),
-        axios.get(`${API_URL}/messages`, authConfig).catch(() => ({ data: [] }))
+        axios.get(`${API_URL}/messages`, authConfig).catch(() => ({ data: [] })),
+        axios.get(`${API_URL}/profile`).catch(() => ({ data: null }))
       ]);
       
       setProjects(projRes.data || []);
       setSkills(skillsRes.data || []);
       setMessages(msgRes.data || []);
+      if (profileRes.data) {
+        setProfile(profileRes.data);
+        setProfileForm({ ...profileForm, ...profileRes.data });
+      }
     } catch (error) {
       console.error("Error fetching admin data:", error);
     }
@@ -59,6 +70,22 @@ const Dashboard = () => {
   const handleLogout = async () => {
     await signOut(auth);
     navigate('/');
+  };
+
+  // --- Profile CRUD ---
+  const saveProfile = async (e) => {
+    e.preventDefault();
+    setIsSavingProfile(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.put(`${API_URL}/profile`, profileForm, config);
+      fetchAdminData(token);
+      alert('Profile updated successfully!');
+    } catch (err) {
+      alert('Failed to save profile');
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   // --- Projects CRUD ---
@@ -163,6 +190,9 @@ const Dashboard = () => {
           <button onClick={() => setActiveTab('messages')} className="btn-outline" style={{ border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '1rem', background: activeTab === 'messages' ? 'rgba(79, 70, 229, 0.15)' : 'transparent', color: activeTab === 'messages' ? 'white' : 'var(--text-secondary)' }}>
             <MessageSquare size={20} color={activeTab === 'messages' ? 'var(--secondary)' : 'currentColor'} /> Inbox Messages
           </button>
+          <button onClick={() => setActiveTab('profile')} className="btn-outline" style={{ border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '1rem', background: activeTab === 'profile' ? 'rgba(79, 70, 229, 0.15)' : 'transparent', color: activeTab === 'profile' ? 'white' : 'var(--text-secondary)' }}>
+            <Settings size={20} color={activeTab === 'profile' ? 'var(--secondary)' : 'currentColor'} /> Profile Settings
+          </button>
         </nav>
         
         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -182,12 +212,60 @@ const Dashboard = () => {
             <h1 style={{ margin: 0, textTransform: 'capitalize', fontSize: '2.5rem' }}>{activeTab} Management</h1>
             <p style={{ color: 'var(--text-secondary)', margin: '0.5rem 0 0 0' }}>Control and overview of your {activeTab}</p>
           </div>
-          {activeTab !== 'messages' && (
-            <button className="btn-primary" style={{ padding: '0.75rem 1.5rem' }} onClick={() => activeTab === 'projects' ? openProjectModal() : openSkillModal()}>
-              <Plus size={18} /> Create New
-            </button>
-          )}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ width: '35px', height: '35px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                {user.email.charAt(0).toUpperCase()}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: '600' }}>Admin</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{user.email}</span>
+              </div>
+            </div>
+            {activeTab !== 'messages' && activeTab !== 'profile' && (
+              <button className="btn-primary" style={{ padding: '0.75rem 1.5rem' }} onClick={() => activeTab === 'projects' ? openProjectModal() : openSkillModal()}>
+                <Plus size={18} /> Create New
+              </button>
+            )}
+          </div>
         </header>
+
+        {/* Profile Tab */}
+        {activeTab === 'profile' && (
+          <div className="glass-card animate-fade-in" style={{ padding: '2.5rem' }}>
+            <form onSubmit={saveProfile}>
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--secondary)' }}>Personal Details</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+                <div><label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Full Name</label><input type="text" className="input-field" required value={profileForm.full_name || ''} onChange={e => setProfileForm({...profileForm, full_name: e.target.value})} /></div>
+                <div><label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Role/Title (Hero)</label><input type="text" className="input-field" required value={profileForm.role_title || ''} onChange={e => setProfileForm({...profileForm, role_title: e.target.value})} /></div>
+                <div style={{ gridColumn: '1 / -1' }}><label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Hero Image URL (Frontend Start Picture)</label><input type="url" className="input-field" value={profileForm.hero_image_url || ''} onChange={e => setProfileForm({...profileForm, hero_image_url: e.target.value})} /></div>
+              </div>
+
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary)', borderTop: '1px solid var(--border-color)', paddingTop: '2rem' }}>About Section</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+                <div><label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>About Image URL</label><input type="url" className="input-field" value={profileForm.about_image_url || ''} onChange={e => setProfileForm({...profileForm, about_image_url: e.target.value})} /></div>
+                <div><label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>About Text</label><textarea className="input-field" rows="4" required value={profileForm.about_text || ''} onChange={e => setProfileForm({...profileForm, about_text: e.target.value})}></textarea></div>
+              </div>
+
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--secondary)', borderTop: '1px solid var(--border-color)', paddingTop: '2rem' }}>Contact & Social</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+                <div><label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Public Email</label><input type="email" className="input-field" value={profileForm.contact_email || ''} onChange={e => setProfileForm({...profileForm, contact_email: e.target.value})} /></div>
+                <div><label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Phone Number</label><input type="text" className="input-field" value={profileForm.contact_phone || ''} onChange={e => setProfileForm({...profileForm, contact_phone: e.target.value})} /></div>
+                <div><label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Location</label><input type="text" className="input-field" value={profileForm.contact_location || ''} onChange={e => setProfileForm({...profileForm, contact_location: e.target.value})} /></div>
+                <div><label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>GitHub URL</label><input type="url" className="input-field" value={profileForm.github_url || ''} onChange={e => setProfileForm({...profileForm, github_url: e.target.value})} /></div>
+                <div><label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>LinkedIn URL</label><input type="url" className="input-field" value={profileForm.linkedin_url || ''} onChange={e => setProfileForm({...profileForm, linkedin_url: e.target.value})} /></div>
+                <div><label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Twitter URL</label><input type="url" className="input-field" value={profileForm.twitter_url || ''} onChange={e => setProfileForm({...profileForm, twitter_url: e.target.value})} /></div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
+                <button type="submit" className="btn-primary" disabled={isSavingProfile} style={{ padding: '0.75rem 2rem' }}>
+                  <Save size={18} /> {isSavingProfile ? 'Saving...' : 'Save Profile Settings'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* Projects Tab */}
         {activeTab === 'projects' && (

@@ -37,22 +37,21 @@ VITE_FIREBASE_APP_ID=your_firebase_app_id
 
 ### 2. Backend Setup
 
+The backend now uses `serverless-http` to run as a Netlify Function.
+
 1. Open a terminal and navigate to the backend folder:
    ```bash
    cd ~/Desktop/AhmarData/portfolio_02/backend
    ```
-2. Install dependencies (you can use `yarn` instead of `npm`):
+2. Install dependencies:
    ```bash
    npm install
-   # OR
-   yarn install
    ```
-3. Start the Node.js API server:
+3. To test the backend locally, you can still run:
    ```bash
    npm run dev
-   # OR
-   yarn dev
    ```
+   *Note: For production, Netlify will serve the backend via `backend/functions/api.js`.*
 
 ### 3. Frontend Setup
 
@@ -60,18 +59,22 @@ VITE_FIREBASE_APP_ID=your_firebase_app_id
    ```bash
    cd ~/Desktop/AhmarData/portfolio_02/frontend
    ```
-2. Install dependencies (if `npm install` hangs on your system, use `yarn`):
+2. Install dependencies:
    ```bash
    npm install
-   # OR
-   yarn install
    ```
 3. Start the React dev server:
    ```bash
    npm run dev
-   # OR
-   yarn dev
    ```
+
+### 4. Deployment (Netlify)
+
+This project is configured to deploy seamlessly on Netlify.
+- The `netlify.toml` file in the root directory handles the build process.
+- Frontend is built into the `dist` folder.
+- Backend Express app is converted to a serverless function in `backend/functions/api.js`.
+- All requests to `/api/*` are redirected to the Netlify function.
 
 ### 3. Database Schema
 

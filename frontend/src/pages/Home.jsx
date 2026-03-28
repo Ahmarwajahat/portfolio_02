@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Github, ExternalLink, Mail, User, Code, Briefcase, ChevronRight, Send, Terminal } from 'lucide-react';
+import { Github, ExternalLink, Mail, User, Code, Briefcase, ChevronRight, Send, Terminal, MapPin, Phone, Linkedin, Twitter } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -7,18 +7,21 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const Home = () => {
   const [projects, setProjects] = useState([]);
   const [skills, setSkills] = useState([]);
+  const [profile, setProfile] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', content: '' });
   const [formStatus, setFormStatus] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [projRes, skillsRes] = await Promise.all([
+        const [projRes, skillsRes, profileRes] = await Promise.all([
           axios.get(`${API_URL}/projects`).catch(() => ({ data: [] })),
-          axios.get(`${API_URL}/skills`).catch(() => ({ data: [] }))
+          axios.get(`${API_URL}/skills`).catch(() => ({ data: [] })),
+          axios.get(`${API_URL}/profile`).catch(() => ({ data: null }))
         ]);
         setProjects(projRes.data || []);
         setSkills(skillsRes.data || []);
+        if (profileRes.data) setProfile(profileRes.data);
       } catch (error) {
         console.error("Error fetching data", error);
       }
@@ -47,13 +50,17 @@ const Home = () => {
         <div className="animate-fade-in stagger-1">
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(79, 70, 229, 0.15)', padding: '0.5rem 1rem', borderRadius: '100px', border: '1px solid var(--primary-glow)', marginBottom: '1.5rem' }}>
             <Terminal size={18} color="var(--secondary)" />
-            <span style={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '0.9rem' }}>Full Stack Developer</span>
+            <span style={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '0.9rem' }}>{profile?.role_title || 'Full Stack Developer'}</span>
           </div>
           
-          <h1 className="animate-float" style={{ fontSize: 'clamp(3.5rem, 8vw, 6rem)', lineHeight: '1.05', margin: '0 0 1.5rem', textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-            Crafting digital <br/>
-            <span className="heading-gradient">masterpieces.</span>
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+            {profile?.hero_image_url && (
+              <img src={profile.hero_image_url} alt="Profile" style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--primary)' }} className="animate-float" />
+            )}
+            <h1 style={{ fontSize: 'clamp(3.5rem, 8vw, 6rem)', lineHeight: '1.05', margin: 0, textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+              {profile?.full_name ? <>Hi, I'm <br/><span className="heading-gradient">{profile.full_name}.</span></> : <>Crafting digital <br/><span className="heading-gradient">masterpieces.</span></>}
+            </h1>
+          </div>
           <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '600px', marginBottom: '3rem', lineHeight: '1.7' }}>
             Elevating ideas through beautiful, high-performance web applications with uncompromised attention to detail and premium aesthetics.
           </p>
@@ -67,6 +74,26 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* About Section */}
+      {profile?.about_text && (
+        <section id="about" className="container" style={{ paddingBottom: '4rem' }}>
+          <div className="glass-card" style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem', alignItems: 'center', padding: '4rem' }}>
+            {profile.about_image_url && (
+              <div style={{ flex: '1', minWidth: '300px' }}>
+                <img src={profile.about_image_url} alt="About Me" style={{ width: '100%', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }} />
+              </div>
+            )}
+            <div style={{ flex: '2', minWidth: '300px' }}>
+              <h2 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}><User className="heading-gradient" size={32} /> About Me</h2>
+              <div style={{ width: '60px', height: '4px', background: 'linear-gradient(90deg, var(--primary), var(--secondary))', marginBottom: '2rem' }}></div>
+              <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: '1.8', whiteSpace: 'pre-wrap' }}>
+                {profile.about_text}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Projects Section */}
       <section id="projects" className="container">
@@ -139,13 +166,27 @@ const Home = () => {
 
       {/* Contact Section */}
       <section id="contact" className="container">
-         <div className="glass-card" style={{ padding: '4rem', maxWidth: '800px', margin: '0 auto', border: '1px solid rgba(255,255,255,0.15)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-          <h2 style={{ fontSize: '3rem', marginBottom: '1rem', textAlign: 'center' }}>Let's Connect</h2>
-          <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '3rem', fontSize: '1.1rem' }}>
-            Ready to bring your visionary project to life? Let's talk about it!
-          </p>
+         <div className="glass-card" style={{ padding: '4rem', margin: '0 auto', border: '1px solid rgba(255,255,255,0.15)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', display: 'flex', flexWrap: 'wrap', gap: '4rem' }}>
+          <div style={{ flex: '1', minWidth: '300px' }}>
+            <h2 style={{ fontSize: '3rem', marginBottom: '1rem' }}>Let's Connect</h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem', fontSize: '1.1rem' }}>
+              Ready to bring your visionary project to life? Drop me a message!
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '3rem' }}>
+              {profile?.contact_email && <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-secondary)' }}><Mail size={20} color="var(--primary)" /> <span>{profile.contact_email}</span></div>}
+              {profile?.contact_phone && <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-secondary)' }}><Phone size={20} color="var(--primary)" /> <span>{profile.contact_phone}</span></div>}
+              {profile?.contact_location && <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-secondary)' }}><MapPin size={20} color="var(--primary)" /> <span>{profile.contact_location}</span></div>}
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              {profile?.github_url && <a href={profile.github_url} target="_blank" rel="noreferrer" className="btn-outline" style={{ padding: '0.75rem', borderRadius: '50%' }}><Github size={20} /></a>}
+              {profile?.linkedin_url && <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="btn-outline" style={{ padding: '0.75rem', borderRadius: '50%' }}><Linkedin size={20} /></a>}
+              {profile?.twitter_url && <a href={profile.twitter_url} target="_blank" rel="noreferrer" className="btn-outline" style={{ padding: '0.75rem', borderRadius: '50%' }}><Twitter size={20} /></a>}
+            </div>
+          </div>
           
-          <form onSubmit={handleContactSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <form onSubmit={handleContactSubmit} style={{ flex: '2', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Full Name</label>
