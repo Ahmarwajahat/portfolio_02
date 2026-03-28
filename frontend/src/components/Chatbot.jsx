@@ -7,7 +7,10 @@ const Chatbot = ({ profile, projects, skills }) => {
     { sender: 'bot', text: `Hi there! I am ${profile?.full_name ? profile.full_name.split(' ')[0] : 'Ahmar'}'s AI Assistant. You can ask me about his projects, skills, or how to contact him!` }
   ]);
   const [inputValue, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+
+  const suggestionChips = ["What are your skills?", "Show projects", "How to contact?"];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -24,10 +27,21 @@ const Chatbot = ({ profile, projects, skills }) => {
     const userMessage = inputValue.trim();
     setMessages(prev => [...prev, { sender: 'user', text: userMessage }]);
     setInput('');
+    setIsTyping(true);
 
     setTimeout(() => {
       generateResponse(userMessage.toLowerCase());
-    }, 600);
+      setIsTyping(false);
+    }, 1200);
+  };
+
+  const handleChipClick = (chipText) => {
+    setMessages(prev => [...prev, { sender: 'user', text: chipText }]);
+    setIsTyping(true);
+    setTimeout(() => {
+      generateResponse(chipText.toLowerCase());
+      setIsTyping(false);
+    }, 1200);
   };
 
   const generateResponse = (message) => {
@@ -119,10 +133,34 @@ const Chatbot = ({ profile, projects, skills }) => {
                 </div>
               </div>
             ))}
+            {isTyping && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                <div style={{ background: 'var(--primary)', padding: '0.4rem', borderRadius: '50%', color: 'white' }}><Bot size={14} /></div>
+                <div style={{ background: 'rgba(255,255,255,0.1)', padding: '0.75rem 1rem', borderRadius: '18px 18px 18px 0', display: 'flex', gap: '4px', alignItems: 'center' }}>
+                  <div style={{ width: '6px', height: '6px', background: 'white', borderRadius: '50%', animation: 'dotTyping 1.5s infinite' }}></div>
+                  <div style={{ width: '6px', height: '6px', background: 'white', borderRadius: '50%', animation: 'dotTyping 1.5s infinite 0.2s' }}></div>
+                  <div style={{ width: '6px', height: '6px', background: 'white', borderRadius: '50%', animation: 'dotTyping 1.5s infinite 0.4s' }}></div>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={handleSend} style={{ display: 'flex', padding: '1rem', background: 'var(--bg-color)', borderTop: '1px solid var(--border-color)' }}>
+          <div style={{ padding: '0.5rem 1rem', background: 'var(--bg-color)', display: 'flex', gap: '0.5rem', overflowX: 'auto', whiteSpace: 'nowrap', borderTop: '1px solid var(--border-color)' }}>
+            {suggestionChips.map((chip, idx) => (
+              <button 
+                key={idx} 
+                onClick={() => handleChipClick(chip)}
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--secondary)', padding: '0.5rem 0.8rem', borderRadius: '100px', fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+                onMouseOver={(e) => { e.target.style.background = 'rgba(255,255,255,0.1)'; e.target.style.color = 'white' }}
+                onMouseOut={(e) => { e.target.style.background = 'rgba(255,255,255,0.05)'; e.target.style.color = 'var(--secondary)' }}
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={handleSend} style={{ display: 'flex', padding: '1rem', background: 'var(--bg-color)' }}>
             <input 
               type="text" 
               placeholder="Ask anything..." 

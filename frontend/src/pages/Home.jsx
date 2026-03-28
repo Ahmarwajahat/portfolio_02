@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Github, ExternalLink, Mail, User, Code, Briefcase, ChevronRight, Send, Terminal, MapPin, Phone, Linkedin, Twitter } from 'lucide-react';
 import Chatbot from '../components/Chatbot';
+import Navbar from '../components/Navbar';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -12,12 +13,42 @@ const Home = () => {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', content: '' });
   const [formStatus, setFormStatus] = useState('');
   const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+  const [typedRole, setTypedRole] = useState('');
 
   useEffect(() => {
     const handleMouseMove = (e) => setMousePos({ x: e.clientX, y: e.clientY });
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, [projects, skills, profile]);
+
+  useEffect(() => {
+    if (!profile) return;
+    const fullText = profile.role_title || 'Full Stack Developer';
+    let i = 0;
+    setTypedRole('');
+    const typingInterval = setInterval(() => {
+      if (i < fullText.length) {
+        setTypedRole(fullText.slice(0, i + 1));
+        i++;
+      } else {
+        clearInterval(typingInterval);
+      }
+    }, 100);
+    return () => clearInterval(typingInterval);
+  }, [profile]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,6 +84,7 @@ const Home = () => {
 
   return (
     <div className="home-container">
+      <Navbar />
       <div 
         style={{
           position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 0,
@@ -63,11 +95,13 @@ const Home = () => {
         }}
       />
       {/* Hero Section */}
-      <section className="hero-section container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '0' }}>
+      <section id="home" className="hero-section container reveal" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '0' }}>
         <div className="animate-fade-in stagger-1">
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(79, 70, 229, 0.15)', padding: '0.5rem 1rem', borderRadius: '100px', border: '1px solid var(--primary-glow)', marginBottom: '1.5rem' }}>
             <Terminal size={18} color="var(--secondary)" />
-            <span style={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '0.9rem' }}>{profile?.role_title || 'Full Stack Developer'}</span>
+            <span style={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '0.9rem', borderRight: '2px solid var(--secondary)', paddingRight: '4px' }}>
+              {typedRole || '\u00A0'}
+            </span>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
@@ -94,7 +128,7 @@ const Home = () => {
 
       {/* About Section */}
       {profile?.about_text && (
-        <section id="about" className="container" style={{ paddingBottom: '4rem' }}>
+        <section id="about" className="container reveal" style={{ paddingBottom: '4rem' }}>
           <div className="glass-card" style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem', alignItems: 'center', padding: '4rem' }}>
             {profile.about_image_url && (
               <div style={{ flex: '1', minWidth: '300px' }}>
@@ -113,7 +147,7 @@ const Home = () => {
       )}
 
       {/* Projects Section */}
-      <section id="projects" className="container">
+      <section id="projects" className="container reveal">
         <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
           <h2 style={{ fontSize: '3rem', display: 'inline-flex', alignItems: 'center', gap: '1rem', justifyContent: 'center' }}>
             <Briefcase className="heading-gradient" size={40} /> Featured Projects
@@ -156,7 +190,7 @@ const Home = () => {
       </section>
 
       {/* Skills Section */}
-      <section id="skills" className="container">
+      <section id="skills" className="container reveal">
         <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
           <h2 style={{ fontSize: '3rem', display: 'inline-flex', alignItems: 'center', gap: '1rem', justifyContent: 'center' }}>
             <Code className="heading-gradient" size={40} /> Technical Arsenal
@@ -182,7 +216,7 @@ const Home = () => {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="container">
+      <section id="contact" className="container reveal">
          <div className="glass-card" style={{ padding: '4rem', margin: '0 auto', border: '1px solid rgba(255,255,255,0.15)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', display: 'flex', flexWrap: 'wrap', gap: '4rem' }}>
           <div style={{ flex: '1', minWidth: '300px' }}>
             <h2 style={{ fontSize: '3rem', marginBottom: '1rem' }}>Let's Connect</h2>
