@@ -37,9 +37,9 @@ insert into profile (
   'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=800', 
   'I am a passionate Full Stack Developer focused on crafting beautiful and high-performance digital experiences.',
   'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=2072',
-  'Lahore, Pakistan',
-  'ahmar@example.com',
-  '+92 300 0000000',
+  'Mianwali, Punjab, Pakistan',
+  'ahmarwajhatawan@gmail.com',
+  '+92 300 4085054',
   'https://github.com/Ahmarwajahat',
   'https://linkedin.com/in/ahmar',
   'https://twitter.com/ahmar'

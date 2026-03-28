@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Github, ExternalLink, Mail, User, Code, Briefcase, ChevronRight, Send, Terminal, MapPin, Phone, Linkedin, Twitter } from 'lucide-react';
+import Chatbot from '../components/Chatbot';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -10,6 +11,13 @@ const Home = () => {
   const [profile, setProfile] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', content: '' });
   const [formStatus, setFormStatus] = useState('');
+  const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+
+  useEffect(() => {
+    const handleMouseMove = (e) => setMousePos({ x: e.clientX, y: e.clientY });
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,6 +53,15 @@ const Home = () => {
 
   return (
     <div className="home-container">
+      <div 
+        style={{
+          position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 0,
+          width: '800px', height: '800px', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(79, 70, 229, 0.05) 0%, transparent 60%)',
+          transform: `translate(${mousePos.x - 400}px, ${mousePos.y - 400}px)`,
+          transition: 'transform 0.15s ease-out'
+        }}
+      />
       {/* Hero Section */}
       <section className="hero-section container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '0' }}>
         <div className="animate-fade-in stagger-1">
@@ -223,6 +240,8 @@ const Home = () => {
           </form>
          </div>
       </section>
+
+      <Chatbot profile={profile} projects={projects} skills={skills} />
 
       {/* Footer */}
       <footer style={{ borderTop: '1px solid var(--border-color)', padding: '3rem 0', textAlign: 'center', color: 'var(--text-secondary)' }}>

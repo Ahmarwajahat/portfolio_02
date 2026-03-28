@@ -230,6 +230,31 @@ const Dashboard = () => {
           </div>
         </header>
 
+        {/* Stats Overview */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+          <div className="glass-card animate-fade-in stagger-1" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem', borderLeft: '4px solid var(--primary)' }}>
+            <div style={{ background: 'rgba(79, 70, 229, 0.15)', padding: '1rem', borderRadius: '12px' }}><Briefcase size={24} color="var(--primary)" /></div>
+            <div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0 0 0.5rem 0' }}>Total Projects</p>
+              <h3 style={{ margin: 0, fontSize: '1.8rem' }}>{projects.length}</h3>
+            </div>
+          </div>
+          <div className="glass-card animate-fade-in stagger-2" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem', borderLeft: '4px solid var(--secondary)' }}>
+            <div style={{ background: 'rgba(6, 182, 212, 0.15)', padding: '1rem', borderRadius: '12px' }}><Code size={24} color="var(--secondary)" /></div>
+            <div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0 0 0.5rem 0' }}>Total Skills</p>
+              <h3 style={{ margin: 0, fontSize: '1.8rem' }}>{skills.length}</h3>
+            </div>
+          </div>
+          <div className="glass-card animate-fade-in stagger-3" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem', borderLeft: '4px solid #10b981' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.15)', padding: '1rem', borderRadius: '12px' }}><MessageSquare size={24} color="#10b981" /></div>
+            <div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0 0 0.5rem 0' }}>Inbox Messages</p>
+              <h3 style={{ margin: 0, fontSize: '1.8rem' }}>{messages.length}</h3>
+            </div>
+          </div>
+        </div>
+
         {/* Profile Tab */}
         {activeTab === 'profile' && (
           <div className="glass-card animate-fade-in" style={{ padding: '2.5rem' }}>
