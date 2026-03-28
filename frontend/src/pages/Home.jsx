@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Github, ExternalLink, Mail, User, Code, Briefcase, ChevronRight, Send, Terminal, MapPin, Phone, Linkedin, Twitter } from 'lucide-react';
+import { Github, ExternalLink, Mail, User, Code, Briefcase, ChevronRight, Send, Terminal, MapPin, Phone, Linkedin, Twitter, Download, Award, BookOpen } from 'lucide-react';
 import Chatbot from '../components/Chatbot';
 import Navbar from '../components/Navbar';
+import TerminalHero from '../components/TerminalHero';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -95,33 +96,39 @@ const Home = () => {
         }}
       />
       {/* Hero Section */}
-      <section id="home" className="hero-section container reveal" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingTop: '0' }}>
-        <div className="animate-fade-in stagger-1">
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(79, 70, 229, 0.15)', padding: '0.5rem 1rem', borderRadius: '100px', border: '1px solid var(--primary-glow)', marginBottom: '1.5rem' }}>
-            <Terminal size={18} color="var(--secondary)" />
-            <span style={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '0.9rem', borderRight: '2px solid var(--secondary)', paddingRight: '4px' }}>
-              {typedRole || '\u00A0'}
-            </span>
+      <section id="home" className="hero-section container reveal" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '4rem', paddingTop: '4rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '4rem', alignItems: 'center', width: '100%' }}>
+          <div className="animate-fade-in stagger-1">
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(16, 185, 129, 0.15)', padding: '0.5rem 1rem', borderRadius: '100px', border: '1px solid rgba(16, 185, 129, 0.3)', marginBottom: '1.5rem' }}>
+              <Terminal size={18} color="#10b981" />
+              <span style={{ color: '#10b981', fontWeight: '600', fontSize: '0.9rem', borderRight: '2px solid #10b981', paddingRight: '4px' }}>
+                {typedRole || '\u00A0'}
+              </span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+              {profile?.hero_image_url && (
+                <img src={profile.hero_image_url} alt="Profile" style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #10b981' }} className="animate-float" />
+              )}
+              <h1 style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', lineHeight: '1.05', margin: 0, textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
+                {profile?.full_name ? <>Hi, I'm <br/><span className="heading-gradient">{profile.full_name}.</span></> : <>Crafting digital <br/><span className="heading-gradient">masterpieces.</span></>}
+              </h1>
+            </div>
+            <p style={{ fontSize: '1.15rem', color: 'var(--text-secondary)', maxWidth: '600px', marginBottom: '3rem', lineHeight: '1.7' }}>
+              Expert Developer specializing in scalable architectures, pristine user interfaces, and robust cybersecurity principles. Welcome to my command center.
+            </p>
+            <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+              <a href="#projects" className="btn-primary glow-effect">
+                Explore Core <ChevronRight size={18} />
+              </a>
+              <a href="/resume.pdf" download className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderColor: '#10b981', color: '#10b981' }}>
+                <Download size={18} /> Download CV
+              </a>
+            </div>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-            {profile?.hero_image_url && (
-              <img src={profile.hero_image_url} alt="Profile" style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '3px solid var(--primary)' }} className="animate-float" />
-            )}
-            <h1 style={{ fontSize: 'clamp(3.5rem, 8vw, 6rem)', lineHeight: '1.05', margin: 0, textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-              {profile?.full_name ? <>Hi, I'm <br/><span className="heading-gradient">{profile.full_name}.</span></> : <>Crafting digital <br/><span className="heading-gradient">masterpieces.</span></>}
-            </h1>
-          </div>
-          <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '600px', marginBottom: '3rem', lineHeight: '1.7' }}>
-            Elevating ideas through beautiful, high-performance web applications with uncompromised attention to detail and premium aesthetics.
-          </p>
-          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-            <a href="#projects" className="btn-primary glow-effect">
-              View My Work <ChevronRight size={18} />
-            </a>
-            <a href="#contact" className="btn-outline">
-              Get in Touch
-            </a>
+          <div className="animate-fade-in stagger-2" style={{ display: 'flex', justifyContent: 'center' }}>
+            <TerminalHero />
           </div>
         </div>
       </section>
@@ -215,6 +222,75 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Certifications Section */}
+      <section id="certifications" className="container reveal">
+        <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '3rem', display: 'inline-flex', alignItems: 'center', gap: '1rem', justifyContent: 'center' }}>
+            <Award className="heading-gradient" size={40} /> Certifications & Labs
+          </h2>
+          <div style={{ width: '80px', height: '4px', background: 'linear-gradient(90deg, #10b981, var(--primary))', margin: '1rem auto' }}></div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+          {/* Static Cert 1 */}
+          <div className="glass-card" style={{ padding: '2rem', borderLeft: '4px solid #f59e0b' }}>
+            <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem', color: 'white' }}>TryHackMe - Offensive Security</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Rank: Top 5% • Multiple lab completions encompassing active directory exploitation and web vulnerabilities.</p>
+            <span style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', borderRadius: '100px' }}>Verified Elite</span>
+          </div>
+          {/* Static Cert 2 */}
+          <div className="glass-card" style={{ padding: '2rem', borderLeft: '4px solid #3b82f6' }}>
+            <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem', color: 'white' }}>AWS Certified Cloud Architect</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Designing highly available, scalable, and secure cloud infrastructure using Amazon Web Services.</p>
+            <span style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', borderRadius: '100px' }}>Cloud Security</span>
+          </div>
+          {/* Static Cert 3 */}
+          <div className="glass-card" style={{ padding: '2rem', borderLeft: '4px solid #10b981' }}>
+            <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem', color: 'white' }}>Advanced React & Node Architecture</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Expert-level certification in building flawless full-stack applications with optimal rendering and secure APIs.</p>
+            <span style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '100px' }}>Full Stack</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Blog & Insights Section */}
+      <section id="blog" className="container reveal" style={{ paddingBottom: '8rem' }}>
+        <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '3rem', display: 'inline-flex', alignItems: 'center', gap: '1rem', justifyContent: 'center' }}>
+            <BookOpen className="heading-gradient" size={40} /> Technical Insights
+          </h2>
+          <div style={{ width: '80px', height: '4px', background: 'linear-gradient(90deg, var(--secondary), var(--primary))', margin: '1rem auto' }}></div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
+          <div className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ height: '180px', backgroundImage: 'url(https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80)', backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+            <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+              <span style={{ color: 'var(--secondary)', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Cybersecurity</span>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>The Beginner's Cybersecurity Guide</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem', flexGrow: 1 }}>A deep dive into securing web applications, sanitizing inputs, and mitigating OWASP Top 10 vulnerabilities in modern architectures.</p>
+              <a href="#" className="btn-outline" style={{ alignSelf: 'flex-start', padding: '0.5rem 1rem' }}>Read Article <ChevronRight size={16}/></a>
+            </div>
+          </div>
+          <div className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ height: '180px', backgroundImage: 'url(https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=80)', backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+            <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+              <span style={{ color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Artificial Intelligence</span>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>LSTM vs Transformer Models</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem', flexGrow: 1 }}>Comparing sequence processing speeds and attention mechanisms in modern machine learning workloads.</p>
+              <a href="#" className="btn-outline" style={{ alignSelf: 'flex-start', padding: '0.5rem 1rem' }}>Read Article <ChevronRight size={16}/></a>
+            </div>
+          </div>
+          <div className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ height: '180px', backgroundImage: 'url(https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80)', backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+            <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+              <span style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Engineering</span>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>How I Built This AI Chatbot</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem', flexGrow: 1 }}>The architectural reasoning behind the interactive context-aware AI assistant running natively in my portfolio.</p>
+              <a href="#" className="btn-outline" style={{ alignSelf: 'flex-start', padding: '0.5rem 1rem' }}>Read Article <ChevronRight size={16}/></a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Contact Section */}
       <section id="contact" className="container reveal">
          <div className="glass-card" style={{ padding: '4rem', margin: '0 auto', border: '1px solid rgba(255,255,255,0.15)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', display: 'flex', flexWrap: 'wrap', gap: '4rem' }}>
@@ -279,10 +355,7 @@ const Home = () => {
 
       {/* Footer */}
       <footer style={{ borderTop: '1px solid var(--border-color)', padding: '3rem 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
-        <p>© {new Date().getFullYear()} Premium Portfolio. All rights reserved.</p>
-        <div style={{ marginTop: '1.5rem' }}>
-          <a href="/admin/login" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.5, transition: '0.3s' }} onMouseOver={e => e.target.style.opacity=1} onMouseOut={e => e.target.style.opacity=0.5}>Admin Access</a>
-        </div>
+        <p>© {new Date().getFullYear()} Protected by Advanced Developer Architecture. All rights reserved.</p>
       </footer>
     </div>
   );

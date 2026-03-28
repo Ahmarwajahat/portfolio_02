@@ -76,9 +76,6 @@ const Navbar = () => {
               {link.name}
             </a>
           ))}
-          <a href="/admin/login" className="btn-primary glow-effect" style={{ padding: '0.6rem 1.2rem', fontSize: '0.9rem' }}>
-            Admin Portal
-          </a>
         </div>
 
         {/* Mobile Toggle */}
@@ -111,9 +108,6 @@ const Navbar = () => {
               {link.name}
             </a>
           ))}
-          <a href="/admin/login" className="btn-primary" style={{ marginTop: '0.5rem', justifyContent: 'center' }}>
-            Admin Portal
-          </a>
         </div>
       )}
     </nav>
