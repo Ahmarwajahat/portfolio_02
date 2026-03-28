@@ -78,6 +78,8 @@ alter table blogs enable row level security;
 create table classified_logs (
   id uuid default uuid_generate_v4() primary key,
   title text not null,
+  category text default 'General',
+  link text,
   description text,
   image_url text,
   date text,

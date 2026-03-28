@@ -319,16 +319,33 @@ const Home = () => {
           <div style={{ width: '80px', height: '4px', background: 'linear-gradient(90deg, var(--primary), #ef4444)', margin: '1rem auto' }}></div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
-          {intel.length > 0 ? intel.map(i => (
-            <div key={i.id} className="glass-card" style={{ padding: '0', overflow: 'hidden' }}>
-              <div style={{ height: '220px', backgroundImage: `url(${i.image_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
-              <div style={{ padding: '1.5rem' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold' }}>[{i.date}]</span>
-                <h3 style={{ fontSize: '1.25rem', margin: '0.5rem 0' }}>{i.title}</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.5' }}>{i.description}</p>
+          {intel.length > 0 ? intel.map(i => {
+            let borderColor = 'var(--border-color)';
+            let icon = '📂';
+            if (i.category === 'Location/Travel') { borderColor = '#3b82f6'; icon = '🌍'; }
+            if (i.category === 'University/Work') { borderColor = '#8b5cf6'; icon = '🎓'; }
+            if (i.category === 'Favorite Read') { borderColor = '#f59e0b'; icon = '📖'; }
+            if (i.category === 'Project Update') { borderColor = '#10b981'; icon = '🚀'; }
+            
+            return (
+              <div key={i.id} className="glass-card" style={{ padding: '0', overflow: 'hidden', borderLeft: `4px solid ${borderColor}`, display: 'flex', flexDirection: 'column' }}>
+                {i.image_url && <div style={{ height: '200px', backgroundImage: `url(${i.image_url})`, backgroundSize: 'cover', backgroundPosition: 'center', borderBottom: '1px solid var(--border-color)' }}></div>}
+                <div style={{ padding: '1.5rem', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '0.8rem', color: borderColor, fontWeight: 'bold', background: `${borderColor}20`, padding: '0.2rem 0.6rem', borderRadius: '100px' }}>{icon} {i.category || 'General'}</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{i.date}</span>
+                  </div>
+                  <h3 style={{ fontSize: '1.25rem', margin: '0.5rem 0' }}>{i.title}</h3>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.5', flexGrow: 1 }}>{i.description}</p>
+                  {i.link && (
+                    <a href={i.link} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: borderColor, textDecoration: 'none', fontWeight: 'bold', marginTop: '1rem', fontSize: '0.9rem' }}>
+                      <ExternalLink size={14} /> Open Secure Link
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          )) : (
+            );
+          }) : (
             <div className="glass-panel" style={{ padding: '3rem', width: '100%', textAlign: 'center', color: 'var(--text-secondary)', gridColumn: '1 / -1' }}>
               No classified logs have been decrypted yet.
             </div>

@@ -34,7 +34,7 @@ const Dashboard = () => {
   const [skillForm, setSkillForm] = useState({ name: '', icon: '', proficiency: 50 });
   const [certForm, setCertForm] = useState({ title: '', issuer: '', description: '', color: '#10b981' });
   const [blogForm, setBlogForm] = useState({ title: '', category: '', category_color: '#10b981', description: '', image_url: '', link: '' });
-  const [intelForm, setIntelForm] = useState({ title: '', description: '', image_url: '', date: '' });
+  const [intelForm, setIntelForm] = useState({ title: '', description: '', image_url: '', date: '', category: 'General', link: '' });
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
@@ -240,7 +240,7 @@ const Dashboard = () => {
   };
   const openIntelModal = (i = null) => {
     if (i) { setEditingId(i.id); setIntelForm({...i}); }
-    else { setEditingId(null); setIntelForm({ title: '', description: '', image_url: '', date: '' }); }
+    else { setEditingId(null); setIntelForm({ title: '', description: '', image_url: '', date: '', category: 'General', link: '' }); }
     setIsModalOpen(true);
   };
 
@@ -592,6 +592,7 @@ const Dashboard = () => {
                 <thead style={{ background: 'rgba(0,0,0,0.3)' }}>
                   <tr>
                     <th style={{ padding: '1.5rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Event/Log Title</th>
+                    <th style={{ padding: '1.5rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Category</th>
                     <th style={{ padding: '1.5rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Date</th>
                     <th style={{ padding: '1.5rem', color: 'var(--text-secondary)', fontWeight: '600', textAlign: 'right' }}>Actions</th>
                   </tr>
@@ -600,6 +601,7 @@ const Dashboard = () => {
                   {intel.map(i => (
                     <tr key={i.id} style={{ borderBottom: '1px solid var(--glass-border)', transition: '0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.02)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                       <td style={{ padding: '1.5rem', fontWeight: 'bold' }}>{i.title}</td>
+                      <td style={{ padding: '1.5rem', color: 'var(--primary)' }}>{i.category || 'General'}</td>
                       <td style={{ padding: '1.5rem' }}>{i.date}</td>
                       <td style={{ padding: '1.5rem', textAlign: 'right' }}>
                          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
@@ -676,9 +678,24 @@ const Dashboard = () => {
               )}
               {activeTab === 'intel' && (
                 <form onSubmit={saveIntel} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                  <div><label>Log Title (e.g. Met Someone Awesome)</label><input type="text" className="input-field" required value={intelForm.title} onChange={e => setIntelForm({...intelForm, title: e.target.value})} placeholder="Hackathon Winner 2026" /></div>
-                  <div><label>Date String</label><input type="text" className="input-field" required value={intelForm.date} onChange={e => setIntelForm({...intelForm, date: e.target.value})} placeholder="October 2026" /></div>
-                  <div><label>Intel Image URL</label><input type="url" className="input-field" required value={intelForm.image_url} onChange={e => setIntelForm({...intelForm, image_url: e.target.value})} placeholder="https://..." /></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
+                    <div><label>Log Title</label><input type="text" className="input-field" required value={intelForm.title} onChange={e => setIntelForm({...intelForm, title: e.target.value})} placeholder="Attention is all you need..." /></div>
+                    <div>
+                      <label>Intel Category</label>
+                      <select className="input-field" value={intelForm.category || 'General'} onChange={e => setIntelForm({...intelForm, category: e.target.value})} style={{ appearance: 'none', background: 'rgba(255,255,255,0.05)', color: 'white' }}>
+                        <option value="General" style={{ background: '#0f172a' }}>General Intel</option>
+                        <option value="Location/Travel" style={{ background: '#0f172a' }}>Location/Travel</option>
+                        <option value="University/Work" style={{ background: '#0f172a' }}>University/Work</option>
+                        <option value="Favorite Read" style={{ background: '#0f172a' }}>Favorite Read</option>
+                        <option value="Project Update" style={{ background: '#0f172a' }}>Project Update</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                    <div><label>Date String</label><input type="text" className="input-field" required value={intelForm.date} onChange={e => setIntelForm({...intelForm, date: e.target.value})} placeholder="October 2026" /></div>
+                    <div><label>External Link (Optional)</label><input type="url" className="input-field" value={intelForm.link || ''} onChange={e => setIntelForm({...intelForm, link: e.target.value})} placeholder="https://..." /></div>
+                  </div>
+                  <div><label>Intel Image URL (Optional for reads)</label><input type="url" className="input-field" value={intelForm.image_url} onChange={e => setIntelForm({...intelForm, image_url: e.target.value})} placeholder="https://..." /></div>
                   <div><label>Classified Description</label><textarea className="input-field" required rows="3" value={intelForm.description} onChange={e => setIntelForm({...intelForm, description: e.target.value})} placeholder="This is the day..."></textarea></div>
                   <button type="submit" className="btn-primary" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}>Save Intel Log</button>
                 </form>
