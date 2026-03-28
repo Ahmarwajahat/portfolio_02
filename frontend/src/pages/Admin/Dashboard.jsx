@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../config/firebase';
 import { signOut } from 'firebase/auth';
-import { LogOut, Home, MessageSquare, Briefcase, Code, Plus, Trash2, Edit, X, User, Settings, Save, Award, BookOpen } from 'lucide-react';
+import { LogOut, Home, MessageSquare, Briefcase, Code, Plus, Trash2, Edit, X, User, Settings, Save, Award, BookOpen, Fingerprint } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -18,6 +18,7 @@ const Dashboard = () => {
   const [messages, setMessages] = useState([]);
   const [certifications, setCertifications] = useState([]);
   const [blogs, setBlogs] = useState([]);
+  const [intel, setIntel] = useState([]);
   const [profile, setProfile] = useState(null);
   const [profileForm, setProfileForm] = useState({
     full_name: '', role_title: '', hero_image_url: '', about_text: '', about_image_url: '', resume_url: '',
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const [skillForm, setSkillForm] = useState({ name: '', icon: '', proficiency: 50 });
   const [certForm, setCertForm] = useState({ title: '', issuer: '', description: '', color: '#10b981' });
   const [blogForm, setBlogForm] = useState({ title: '', category: '', category_color: '#10b981', description: '', image_url: '', link: '' });
+  const [intelForm, setIntelForm] = useState({ title: '', description: '', image_url: '', date: '' });
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
@@ -52,13 +54,14 @@ const Dashboard = () => {
     try {
       const authConfig = { headers: { Authorization: `Bearer ${authToken}` } };
       
-      const [projRes, skillsRes, msgRes, profileRes, certRes, blogRes] = await Promise.all([
+      const [projRes, skillsRes, msgRes, profileRes, certRes, blogRes, intelRes] = await Promise.all([
         axios.get(`${API_URL}/projects`),
         axios.get(`${API_URL}/skills`),
         axios.get(`${API_URL}/messages`, authConfig).catch(() => ({ data: [] })),
         axios.get(`${API_URL}/profile`).catch(() => ({ data: null })),
         axios.get(`${API_URL}/certifications`).catch(() => ({ data: [] })),
-        axios.get(`${API_URL}/blogs`).catch(() => ({ data: [] }))
+        axios.get(`${API_URL}/blogs`).catch(() => ({ data: [] })),
+        axios.get(`${API_URL}/intel`).catch(() => ({ data: [] }))
       ]);
       
       setProjects(projRes.data || []);
@@ -66,6 +69,7 @@ const Dashboard = () => {
       setMessages(msgRes.data || []);
       setCertifications(certRes.data || []);
       setBlogs(blogRes.data || []);
+      setIntel(intelRes.data || []);
       if (profileRes.data) {
         setProfile(profileRes.data);
         setProfileForm({ ...profileForm, ...profileRes.data });
@@ -216,6 +220,30 @@ const Dashboard = () => {
     setIsModalOpen(true);
   };
 
+  // --- Classified Intel CRUD ---
+  const saveIntel = async (e) => {
+    e.preventDefault();
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      if (editingId) await axios.put(`${API_URL}/intel/${editingId}`, intelForm, config);
+      else await axios.post(`${API_URL}/intel`, intelForm, config);
+      setIsModalOpen(false);
+      fetchAdminData(token);
+    } catch (err) { alert('Failed to save Intel'); }
+  };
+  const deleteIntel = async (id) => {
+    if(!window.confirm('Erase this log from your vault?')) return;
+    try {
+      await axios.delete(`${API_URL}/intel/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      fetchAdminData(token);
+    } catch (err) { alert('Failed'); }
+  };
+  const openIntelModal = (i = null) => {
+    if (i) { setEditingId(i.id); setIntelForm({...i}); }
+    else { setEditingId(null); setIntelForm({ title: '', description: '', image_url: '', date: '' }); }
+    setIsModalOpen(true);
+  };
+
   // --- Messages Delete ---
   const deleteMessage = async (id) => {
     if(!window.confirm('Delete this message?')) return;
@@ -248,6 +276,9 @@ const Dashboard = () => {
           </button>
           <button onClick={() => setActiveTab('blogs')} className="btn-outline" style={{ border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '1rem', background: activeTab === 'blogs' ? 'rgba(79, 70, 229, 0.15)' : 'transparent', color: activeTab === 'blogs' ? 'white' : 'var(--text-secondary)' }}>
             <BookOpen size={20} color={activeTab === 'blogs' ? 'var(--secondary)' : 'currentColor'} /> Tech Blogs
+          </button>
+          <button onClick={() => setActiveTab('intel')} className="btn-outline" style={{ border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '1rem', background: activeTab === 'intel' ? 'rgba(79, 70, 229, 0.15)' : 'transparent', color: activeTab === 'intel' ? 'white' : 'var(--text-secondary)' }}>
+            <Fingerprint size={20} color={activeTab === 'intel' ? 'var(--secondary)' : 'currentColor'} /> Classified Intel
           </button>
           <button onClick={() => setActiveTab('messages')} className="btn-outline" style={{ border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '1rem', background: activeTab === 'messages' ? 'rgba(79, 70, 229, 0.15)' : 'transparent', color: activeTab === 'messages' ? 'white' : 'var(--text-secondary)' }}>
             <MessageSquare size={20} color={activeTab === 'messages' ? 'var(--secondary)' : 'currentColor'} /> Inbox Messages
@@ -290,6 +321,7 @@ const Dashboard = () => {
                 else if(activeTab === 'skills') openSkillModal();
                 else if(activeTab === 'certifications') openCertModal();
                 else if(activeTab === 'blogs') openBlogModal();
+                else if(activeTab === 'intel') openIntelModal();
               }}>
                 <Plus size={18} /> Create New
               </button>
@@ -547,13 +579,49 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* Classified Intel Tab */}
+        {activeTab === 'intel' && (
+          <div className="glass-card animate-fade-in" style={{ padding: '0', overflow: 'hidden' }}>
+            {intel.length === 0 ? (
+              <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                <Fingerprint size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
+                <p>No Personal Logs found. Upload a picture or favorite event.</p>
+              </div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead style={{ background: 'rgba(0,0,0,0.3)' }}>
+                  <tr>
+                    <th style={{ padding: '1.5rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Event/Log Title</th>
+                    <th style={{ padding: '1.5rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Date</th>
+                    <th style={{ padding: '1.5rem', color: 'var(--text-secondary)', fontWeight: '600', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {intel.map(i => (
+                    <tr key={i.id} style={{ borderBottom: '1px solid var(--glass-border)', transition: '0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,0.02)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                      <td style={{ padding: '1.5rem', fontWeight: 'bold' }}>{i.title}</td>
+                      <td style={{ padding: '1.5rem' }}>{i.date}</td>
+                      <td style={{ padding: '1.5rem', textAlign: 'right' }}>
+                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                           <button className="btn-outline" onClick={() => openIntelModal(i)} style={{ padding: '0.5rem', borderRadius: '8px' }} title="Edit"><Edit size={16} /></button>
+                           <button className="btn-outline" onClick={() => deleteIntel(i.id)} style={{ padding: '0.5rem', borderRadius: '8px', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }} title="Delete"><Trash2 size={16} /></button>
+                         </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
         {/* Modal Backdrop and Content */}
         {isModalOpen && (
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
             <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', padding: '2.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h2 style={{ margin: 0 }} className="heading-gradient">
-                  {editingId ? 'Edit' : 'Create'} {activeTab === 'projects' ? 'Project' : activeTab === 'skills' ? 'Skill' : activeTab === 'certifications' ? 'Certification' : 'Blog'}
+                  {editingId ? 'Edit' : 'Create'} {activeTab === 'projects' ? 'Project' : activeTab === 'skills' ? 'Skill' : activeTab === 'certifications' ? 'Certification' : activeTab === 'blogs' ? 'Blog' : 'Intel Log'}
                 </h2>
                 <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={24} /></button>
               </div>
@@ -604,6 +672,15 @@ const Dashboard = () => {
                      <div><label>Blog Link URL</label><input type="url" className="input-field" required value={blogForm.link} onChange={e => setBlogForm({...blogForm, link: e.target.value})} placeholder="https://..." /></div>
                   </div>
                   <button type="submit" className="btn-primary" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}>Save Tech Blog</button>
+                </form>
+              )}
+              {activeTab === 'intel' && (
+                <form onSubmit={saveIntel} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <div><label>Log Title (e.g. Met Someone Awesome)</label><input type="text" className="input-field" required value={intelForm.title} onChange={e => setIntelForm({...intelForm, title: e.target.value})} placeholder="Hackathon Winner 2026" /></div>
+                  <div><label>Date String</label><input type="text" className="input-field" required value={intelForm.date} onChange={e => setIntelForm({...intelForm, date: e.target.value})} placeholder="October 2026" /></div>
+                  <div><label>Intel Image URL</label><input type="url" className="input-field" required value={intelForm.image_url} onChange={e => setIntelForm({...intelForm, image_url: e.target.value})} placeholder="https://..." /></div>
+                  <div><label>Classified Description</label><textarea className="input-field" required rows="3" value={intelForm.description} onChange={e => setIntelForm({...intelForm, description: e.target.value})} placeholder="This is the day..."></textarea></div>
+                  <button type="submit" className="btn-primary" style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}>Save Intel Log</button>
                 </form>
               )}
             </div>

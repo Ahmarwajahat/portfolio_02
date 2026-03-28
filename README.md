@@ -153,4 +153,14 @@ create table blogs (
 
 -- Profile Additions
 ALTER TABLE profile ADD COLUMN IF NOT EXISTS resume_url TEXT;
+
+-- Classified Logs / Personal Intel Table
+create table classified_logs (
+  id uuid default uuid_generate_v4() primary key,
+  title text not null,
+  description text,
+  image_url text,
+  date text,
+  created_at timestamp with time zone default now()
+);
 ```

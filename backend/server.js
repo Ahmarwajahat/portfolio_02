@@ -21,6 +21,7 @@ const messagesRoutes = require('./src/routes/messages');
 const profileRoutes = require('./src/routes/profile');
 const certificationsRoutes = require('./src/routes/certifications');
 const blogsRoutes = require('./src/routes/blogs');
+const intelRoutes = require('./src/routes/intel');
 
 // Use Routes
 app.use('/api/projects', projectsRoutes);
@@ -29,6 +30,7 @@ app.use('/api/messages', messagesRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/certifications', certificationsRoutes);
 app.use('/api/blogs', blogsRoutes);
+app.use('/api/intel', intelRoutes);
 
 // 404 Handler
 app.use((req, res, next) => {

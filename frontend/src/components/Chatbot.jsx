@@ -74,6 +74,9 @@ const Chatbot = ({ profile, projects, skills }) => {
     else if (message.includes('ai') || message.includes('artificial intelligence')) {
       response = "AI is fascinating, isn't it? Just like me! I'm a custom-built AI tailored specifically for this portfolio to make your experience 'maze ka' (fun and interesting)! 😉";
     }
+    else if (message.includes('sudo') || message.includes('flag') || message.includes('hack') || message.includes('root')) {
+      response = "[ACCESS_GRANTED] Master decryption key acquired... 🚩 You found the hidden Easter Egg! FLAG{4hm4r_1s_4_m4st3r_d3v}";
+    }
 
     setMessages(prev => [...prev, { sender: 'bot', text: response }]);
   };

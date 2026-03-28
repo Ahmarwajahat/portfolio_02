@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Github, ExternalLink, Mail, User, Code, Briefcase, ChevronRight, Send, Terminal, MapPin, Phone, Linkedin, Twitter, Download, Award, BookOpen } from 'lucide-react';
+import { Github, ExternalLink, Mail, User, Code, Briefcase, ChevronRight, Send, Terminal, MapPin, Phone, Linkedin, Twitter, Download, Award, BookOpen, Activity, Fingerprint } from 'lucide-react';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import Chatbot from '../components/Chatbot';
 import Navbar from '../components/Navbar';
 import TerminalHero from '../components/TerminalHero';
@@ -12,6 +13,10 @@ const Home = () => {
   const [skills, setSkills] = useState([]);
   const [certifications, setCertifications] = useState([]);
   const [blogs, setBlogs] = useState([]);
+  const [intel, setIntel] = useState([]);
+  const [githubEvents, setGithubEvents] = useState([]);
+  const [hackerClicks, setHackerClicks] = useState(0);
+  const [showFlag, setShowFlag] = useState(false);
   const [profile, setProfile] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', content: '' });
   const [formStatus, setFormStatus] = useState('');
@@ -56,17 +61,19 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [projRes, skillsRes, profileRes, certRes, blogRes] = await Promise.all([
+        const [projRes, skillsRes, profileRes, certRes, blogRes, intelRes] = await Promise.all([
           axios.get(`${API_URL}/projects`).catch(() => ({ data: [] })),
           axios.get(`${API_URL}/skills`).catch(() => ({ data: [] })),
           axios.get(`${API_URL}/profile`).catch(() => ({ data: null })),
           axios.get(`${API_URL}/certifications`).catch(() => ({ data: [] })),
-          axios.get(`${API_URL}/blogs`).catch(() => ({ data: [] }))
+          axios.get(`${API_URL}/blogs`).catch(() => ({ data: [] })),
+          axios.get(`${API_URL}/intel`).catch(() => ({ data: [] }))
         ]);
         setProjects(projRes.data || []);
         setSkills(skillsRes.data || []);
         setCertifications(certRes.data || []);
         setBlogs(blogRes.data || []);
+        setIntel(intelRes.data || []);
         if (profileRes.data) setProfile(profileRes.data);
       } catch (error) {
         console.error("Error fetching data", error);
@@ -74,6 +81,26 @@ const Home = () => {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (profile?.github_url) {
+      const username = profile.github_url.split('/').pop();
+      if (username) {
+        axios.get(`https://api.github.com/users/${username}/events/public`)
+          .then(res => setGithubEvents(res.data.slice(0, 5)))
+          .catch(err => console.error("GitHub fetch error:", err));
+      }
+    }
+  }, [profile]);
+
+  const triggerHack = () => {
+    setHackerClicks(prev => prev + 1);
+    if (hackerClicks + 1 === 3) {
+      setShowFlag(true);
+      setTimeout(() => setShowFlag(false), 8000);
+      setHackerClicks(0);
+    }
+  };
 
   const handleContactSubmit = async (e) => {
     e.preventDefault();
@@ -116,8 +143,9 @@ const Home = () => {
               {profile?.hero_image_url && (
                 <img src={profile.hero_image_url} alt="Profile" style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #10b981' }} className="animate-float" />
               )}
-              <h1 style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', lineHeight: '1.05', margin: 0, textShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
-                {profile?.full_name ? <>Hi, I'm <br/><span className="heading-gradient">{profile.full_name}.</span></> : <>Crafting digital <br/><span className="heading-gradient">masterpieces.</span></>}
+              <h1 onClick={triggerHack} style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', lineHeight: '1.05', margin: 0, textShadow: '0 10px 30px rgba(0,0,0,0.5)', cursor: 'pointer', position: 'relative' }}>
+                {showFlag && <div style={{ position: 'absolute', top: '-1rem', left: '1rem', background: '#ef4444', color: 'white', padding: '0.2rem 1rem', borderRadius: '4px', fontSize: '1rem', animation: 'pulse 1s infinite', textShadow: 'none', border: '1px solid white' }}>FLAG&#123;4hm4r_1s_4_m4st3r_d3v&#125;</div>}
+                {profile?.full_name ? <>Hi, I'm <br/><span className={showFlag ? "glitch-text heading-gradient" : "heading-gradient"}>{profile.full_name}.</span></> : <>Crafting digital <br/><span className="heading-gradient">masterpieces.</span></>}
               </h1>
             </div>
             <p style={{ fontSize: '1.15rem', color: 'var(--text-secondary)', maxWidth: '600px', marginBottom: '3rem', lineHeight: '1.7' }}>
@@ -211,20 +239,51 @@ const Home = () => {
           <div style={{ width: '80px', height: '4px', background: 'linear-gradient(90deg, var(--primary), var(--secondary))', margin: '1rem auto' }}></div>
         </div>
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
-          {skills.length > 0 ? skills.map((skill) => (
-            <div key={skill.id} className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', color: 'var(--secondary)' }}>{skill.icon || '🚀'}</div>
-              <span style={{ fontSize: '1.25rem', fontWeight: '600' }}>{skill.name}</span>
-              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
-                <div style={{ width: `${skill.proficiency}%`, height: '100%', background: 'linear-gradient(90deg, var(--primary), var(--secondary))', borderRadius: '10px' }}></div>
-              </div>
-            </div>
-          )) : (
-            <div className="glass-panel" style={{ padding: '3rem', width: '100%', textAlign: 'center', color: 'var(--text-secondary)', gridColumn: '1 / -1' }}>
-              Skills will be populated from the database.
+        <div className="glass-card" style={{ height: '500px', width: '100%', padding: '2rem 1rem 3rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {skills.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="75%" data={skills}>
+                <PolarGrid stroke="rgba(255,255,255,0.1)" />
+                <PolarAngleAxis dataKey="name" tick={{ fill: 'var(--text-secondary)', fontSize: 13, fontWeight: 'bold' }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="transparent" tick={false} />
+                <Radar name="Proficiency" dataKey="proficiency" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.4} />
+                <RechartsTooltip contentStyle={{ background: 'rgba(0,0,0,0.8)', border: '1px solid var(--primary)', borderRadius: '8px', color: 'white' }} itemStyle={{ color: 'var(--primary)', fontWeight: 'bold' }} />
+              </RadarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="glass-panel" style={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+              Awaiting neural skill link data...
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Live System Logs Section */}
+      <section id="activity" className="container reveal" style={{ paddingBottom: '4rem' }}>
+        <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '3rem', display: 'inline-flex', alignItems: 'center', gap: '1rem', justifyContent: 'center' }}>
+            <Activity className="heading-gradient" size={40} /> Live System Logs
+          </h2>
+          <div style={{ width: '80px', height: '4px', background: 'linear-gradient(90deg, #3b82f6, var(--primary))', margin: '1rem auto' }}></div>
+        </div>
+        <div className="glass-card" style={{ padding: '2rem', fontFamily: 'monospace' }}>
+          <div style={{ color: '#10b981', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold' }}>
+            <span style={{ width: '10px', height: '10px', background: '#10b981', borderRadius: '50%', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
+            OPERATIONAL_STATUS: ALL_SYSTEMS_NOMINAL
+          </div>
+          <div style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {githubEvents.length > 0 ? githubEvents.map(ev => (
+              <div key={ev.id} style={{ borderLeft: '2px solid rgba(255,255,255,0.1)', paddingLeft: '1rem', color: 'var(--text-secondary)' }}>
+                <div style={{ color: 'var(--primary)', fontSize: '0.8rem', marginBottom: '0.2rem' }}>[{new Date(ev.created_at).toLocaleString()}]</div>
+                <div><span style={{ color: 'white' }}>{ev.type.replace('Event', '')}</span> execution detected on <a href={`https://github.com/${ev.repo.name}`} target="_blank" rel="noreferrer" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>{ev.repo.name}</a></div>
+              </div>
+            )) : (
+              <div style={{ color: 'var(--text-secondary)' }}>Establishing secure link to Github telemetry...</div>
+            )}
+          </div>
+          <div style={{ marginTop: '2rem', padding: '1rem', background: 'rgba(79, 70, 229, 0.1)', borderLeft: '4px solid var(--primary)' }}>
+            <span style={{ color: 'white', fontWeight: 'bold' }}>CURRENT VECTOR:</span> Initializing Phase 7 Gamified Architectures...
+          </div>
         </div>
       </section>
 
@@ -246,6 +305,32 @@ const Home = () => {
           )) : (
             <div className="glass-panel" style={{ padding: '3rem', width: '100%', textAlign: 'center', color: 'var(--text-secondary)', gridColumn: '1 / -1' }}>
               Certifications & Labs will dynamically appear here once added in the CMS.
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Classified Intel Section */}
+      <section id="intel" className="container reveal" style={{ paddingBottom: '4rem' }}>
+        <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '3rem', display: 'inline-flex', alignItems: 'center', gap: '1rem', justifyContent: 'center' }}>
+            <Fingerprint className="heading-gradient" size={40} /> Classified Intel
+          </h2>
+          <div style={{ width: '80px', height: '4px', background: 'linear-gradient(90deg, var(--primary), #ef4444)', margin: '1rem auto' }}></div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
+          {intel.length > 0 ? intel.map(i => (
+            <div key={i.id} className="glass-card" style={{ padding: '0', overflow: 'hidden' }}>
+              <div style={{ height: '220px', backgroundImage: `url(${i.image_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+              <div style={{ padding: '1.5rem' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'bold' }}>[{i.date}]</span>
+                <h3 style={{ fontSize: '1.25rem', margin: '0.5rem 0' }}>{i.title}</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.5' }}>{i.description}</p>
+              </div>
+            </div>
+          )) : (
+            <div className="glass-panel" style={{ padding: '3rem', width: '100%', textAlign: 'center', color: 'var(--text-secondary)', gridColumn: '1 / -1' }}>
+              No classified logs have been decrypted yet.
             </div>
           )}
         </div>

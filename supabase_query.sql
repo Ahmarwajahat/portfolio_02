@@ -73,3 +73,15 @@ create table blogs (
 );
 
 alter table blogs enable row level security;
+
+-- Classified Logs / Personal Intel Table
+create table classified_logs (
+  id uuid default uuid_generate_v4() primary key,
+  title text not null,
+  description text,
+  image_url text,
+  date text,
+  created_at timestamp with time zone default now()
+);
+
+alter table classified_logs enable row level security;
