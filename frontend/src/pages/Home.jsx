@@ -10,6 +10,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const Home = () => {
   const [projects, setProjects] = useState([]);
   const [skills, setSkills] = useState([]);
+  const [certifications, setCertifications] = useState([]);
+  const [blogs, setBlogs] = useState([]);
   const [profile, setProfile] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', content: '' });
   const [formStatus, setFormStatus] = useState('');
@@ -54,13 +56,17 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [projRes, skillsRes, profileRes] = await Promise.all([
+        const [projRes, skillsRes, profileRes, certRes, blogRes] = await Promise.all([
           axios.get(`${API_URL}/projects`).catch(() => ({ data: [] })),
           axios.get(`${API_URL}/skills`).catch(() => ({ data: [] })),
-          axios.get(`${API_URL}/profile`).catch(() => ({ data: null }))
+          axios.get(`${API_URL}/profile`).catch(() => ({ data: null })),
+          axios.get(`${API_URL}/certifications`).catch(() => ({ data: [] })),
+          axios.get(`${API_URL}/blogs`).catch(() => ({ data: [] }))
         ]);
         setProjects(projRes.data || []);
         setSkills(skillsRes.data || []);
+        setCertifications(certRes.data || []);
+        setBlogs(blogRes.data || []);
         if (profileRes.data) setProfile(profileRes.data);
       } catch (error) {
         console.error("Error fetching data", error);
@@ -121,8 +127,8 @@ const Home = () => {
               <a href="#projects" className="btn-primary glow-effect">
                 Explore Core <ChevronRight size={18} />
               </a>
-              <a href="/resume.pdf" download className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderColor: '#10b981', color: '#10b981' }}>
-                <Download size={18} /> Download CV
+              <a href={profile?.resume_url || '#'} target={profile?.resume_url ? "_blank" : "_self"} className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderColor: '#10b981', color: '#10b981', textDecoration: 'none' }}>
+                <Download size={18} /> {profile?.resume_url ? 'View CV' : 'CV Coming Soon'}
               </a>
             </div>
           </div>
@@ -231,24 +237,17 @@ const Home = () => {
           <div style={{ width: '80px', height: '4px', background: 'linear-gradient(90deg, #10b981, var(--primary))', margin: '1rem auto' }}></div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
-          {/* Static Cert 1 */}
-          <div className="glass-card" style={{ padding: '2rem', borderLeft: '4px solid #f59e0b' }}>
-            <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem', color: 'white' }}>TryHackMe - Offensive Security</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Rank: Top 5% • Multiple lab completions encompassing active directory exploitation and web vulnerabilities.</p>
-            <span style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', borderRadius: '100px' }}>Verified Elite</span>
-          </div>
-          {/* Static Cert 2 */}
-          <div className="glass-card" style={{ padding: '2rem', borderLeft: '4px solid #3b82f6' }}>
-            <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem', color: 'white' }}>AWS Certified Cloud Architect</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Designing highly available, scalable, and secure cloud infrastructure using Amazon Web Services.</p>
-            <span style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', borderRadius: '100px' }}>Cloud Security</span>
-          </div>
-          {/* Static Cert 3 */}
-          <div className="glass-card" style={{ padding: '2rem', borderLeft: '4px solid #10b981' }}>
-            <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem', color: 'white' }}>Advanced React & Node Architecture</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Expert-level certification in building flawless full-stack applications with optimal rendering and secure APIs.</p>
-            <span style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '100px' }}>Full Stack</span>
-          </div>
+          {certifications.length > 0 ? certifications.map((cert) => (
+            <div key={cert.id} className="glass-card" style={{ padding: '2rem', borderLeft: `4px solid ${cert.color}` }}>
+              <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem', color: 'white' }}>{cert.title}</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>{cert.description}</p>
+              <span style={{ fontSize: '0.8rem', padding: '0.3rem 0.8rem', background: `${cert.color}20`, color: cert.color, borderRadius: '100px' }}>{cert.issuer}</span>
+            </div>
+          )) : (
+            <div className="glass-panel" style={{ padding: '3rem', width: '100%', textAlign: 'center', color: 'var(--text-secondary)', gridColumn: '1 / -1' }}>
+              Certifications & Labs will dynamically appear here once added in the CMS.
+            </div>
+          )}
         </div>
       </section>
 
@@ -261,33 +260,21 @@ const Home = () => {
           <div style={{ width: '80px', height: '4px', background: 'linear-gradient(90deg, var(--secondary), var(--primary))', margin: '1rem auto' }}></div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
-          <div className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ height: '180px', backgroundImage: 'url(https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80)', backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
-            <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-              <span style={{ color: 'var(--secondary)', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Cybersecurity</span>
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>The Beginner's Cybersecurity Guide</h3>
-              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem', flexGrow: 1 }}>A deep dive into securing web applications, sanitizing inputs, and mitigating OWASP Top 10 vulnerabilities in modern architectures.</p>
-              <a href="#" className="btn-outline" style={{ alignSelf: 'flex-start', padding: '0.5rem 1rem' }}>Read Article <ChevronRight size={16}/></a>
+          {blogs.length > 0 ? blogs.map((blog) => (
+            <div key={blog.id} className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ height: '180px', backgroundImage: `url(${blog.image_url || 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80'})`, backgroundSize: 'cover', backgroundPosition: 'center', borderBottom: '1px solid var(--border-color)' }}></div>
+              <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <span style={{ color: blog.category_color, fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>{blog.category}</span>
+                <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>{blog.title}</h3>
+                <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem', flexGrow: 1 }}>{blog.description}</p>
+                <a href={blog.link || '#'} target={blog.link ? "_blank" : "_self"} rel="noreferrer" className="btn-outline" style={{ alignSelf: 'flex-start', padding: '0.5rem 1rem', textDecoration: 'none' }}>Read Article <ChevronRight size={16}/></a>
+              </div>
             </div>
-          </div>
-          <div className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ height: '180px', backgroundImage: 'url(https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=80)', backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
-            <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-              <span style={{ color: 'var(--primary)', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Artificial Intelligence</span>
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>LSTM vs Transformer Models</h3>
-              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem', flexGrow: 1 }}>Comparing sequence processing speeds and attention mechanisms in modern machine learning workloads.</p>
-              <a href="#" className="btn-outline" style={{ alignSelf: 'flex-start', padding: '0.5rem 1rem' }}>Read Article <ChevronRight size={16}/></a>
+          )) : (
+            <div className="glass-panel" style={{ padding: '3rem', width: '100%', textAlign: 'center', color: 'var(--text-secondary)', gridColumn: '1 / -1' }}>
+              Technical insights will dynamically appear here once published in the CMS.
             </div>
-          </div>
-          <div className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ height: '180px', backgroundImage: 'url(https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80)', backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
-            <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-              <span style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Engineering</span>
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>How I Built This AI Chatbot</h3>
-              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.5rem', flexGrow: 1 }}>The architectural reasoning behind the interactive context-aware AI assistant running natively in my portfolio.</p>
-              <a href="#" className="btn-outline" style={{ alignSelf: 'flex-start', padding: '0.5rem 1rem' }}>Read Article <ChevronRight size={16}/></a>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 

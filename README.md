@@ -128,4 +128,29 @@ create table messages (
   content text not null,
   created_at timestamp with time zone default now()
 );
+
+-- Certifications Table
+create table certifications (
+  id uuid default uuid_generate_v4() primary key,
+  title text not null,
+  issuer text not null,
+  description text,
+  color text default '#10b981',
+  created_at timestamp with time zone default now()
+);
+
+-- Tech Blogs Table
+create table blogs (
+  id uuid default uuid_generate_v4() primary key,
+  title text not null,
+  category text,
+  category_color text default '#10b981',
+  description text,
+  image_url text,
+  link text,
+  created_at timestamp with time zone default now()
+);
+
+-- Profile Additions
+ALTER TABLE profile ADD COLUMN IF NOT EXISTS resume_url TEXT;
 ```
