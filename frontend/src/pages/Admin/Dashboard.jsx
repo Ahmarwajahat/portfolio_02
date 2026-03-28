@@ -212,7 +212,6 @@ const Dashboard = () => {
             <h1 style={{ margin: 0, textTransform: 'capitalize', fontSize: '2.5rem' }}>{activeTab} Management</h1>
             <p style={{ color: 'var(--text-secondary)', margin: '0.5rem 0 0 0' }}>Control and overview of your {activeTab}</p>
           </div>
-          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '100px', border: '1px solid rgba(255,255,255,0.1)' }}>
               <div style={{ width: '35px', height: '35px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>

@@ -81,6 +81,23 @@ This project is configured to deploy seamlessly on Netlify.
 You will need to run the following SQL queries in your Supabase SQL editor:
 
 ```sql
+-- Profile Table (Run this new query for the settings feature)
+create table profile (
+  id uuid default uuid_generate_v4() primary key,
+  full_name text not null,
+  role_title text not null,
+  hero_image_url text,
+  about_text text,
+  about_image_url text,
+  contact_location text,
+  contact_email text,
+  contact_phone text,
+  github_url text,
+  linkedin_url text,
+  twitter_url text,
+  updated_at timestamp with time zone default now()
+);
+
 -- Projects Table
 create table projects (
   id uuid default uuid_generate_v4() primary key,
