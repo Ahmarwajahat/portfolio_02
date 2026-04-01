@@ -8,6 +8,8 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+console.log(`🔌 Initializing API with base: ${API_URL}`);
+
 const Home = () => {
   const [projects, setProjects] = useState([]);
   const [skills, setSkills] = useState([]);

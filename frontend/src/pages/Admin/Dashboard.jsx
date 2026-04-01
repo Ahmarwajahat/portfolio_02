@@ -7,6 +7,8 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+console.log(`🔌 Admin CMS initializing with base: ${API_URL}`);
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
