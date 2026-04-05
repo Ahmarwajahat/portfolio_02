@@ -1,10 +1,10 @@
-const supabase = require('../config/supabase');
+const { db } = require('../config/firebase');
 
 // Get all projects
 const getProjects = async (req, res) => {
   try {
-    const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
+    const snapshot = await db.collection('projects').orderBy('created_at', 'desc').get();
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message, status: 'failed' });
@@ -15,10 +15,9 @@ const getProjects = async (req, res) => {
 const getProjectById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { data, error } = await supabase.from('projects').select('*').eq('id', id).single();
-    if (error) throw error;
-    if (!data) return res.status(404).json({ message: 'Project not found' });
-    res.json(data);
+    const doc = await db.collection('projects').doc(id).get();
+    if (!doc.exists) return res.status(404).json({ message: 'Project not found' });
+    res.json({ id: doc.id, ...doc.data() });
   } catch (err) {
     res.status(500).json({ error: err.message, status: 'failed' });
   }
@@ -28,12 +27,9 @@ const getProjectById = async (req, res) => {
 const createProject = async (req, res) => {
   try {
     const { title, description, image_url, live_link, github_link, tech_stack } = req.body;
-    const { data, error } = await supabase
-      .from('projects')
-      .insert([{ title, description, image_url, live_link, github_link, tech_stack }])
-      .select();
-    if (error) throw error;
-    res.status(201).json({ message: 'Project created successfully', data: data[0] });
+    const newDoc = { title, description, image_url, live_link, github_link, tech_stack, created_at: new Date().toISOString() };
+    const docRef = await db.collection('projects').add(newDoc);
+    res.status(201).json({ message: 'Project created successfully', data: { id: docRef.id, ...newDoc } });
   } catch (err) {
     res.status(500).json({ error: err.message, status: 'failed' });
   }
@@ -44,13 +40,10 @@ const updateProject = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
-    const { data, error } = await supabase
-      .from('projects')
-      .update(updates)
-      .eq('id', id)
-      .select();
-    if (error) throw error;
-    res.json({ message: 'Project updated successfully', data: data[0] });
+    const docRef = db.collection('projects').doc(id);
+    await docRef.update(updates);
+    const updatedDoc = await docRef.get();
+    res.json({ message: 'Project updated successfully', data: { id: updatedDoc.id, ...updatedDoc.data() } });
   } catch (err) {
     res.status(500).json({ error: err.message, status: 'failed' });
   }
@@ -60,9 +53,8 @@ const updateProject = async (req, res) => {
 const deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
-    const { data, error } = await supabase.from('projects').delete().eq('id', id).select();
-    if (error) throw error;
-    res.json({ message: 'Project deleted successfully', deleted: data[0] });
+    await db.collection('projects').doc(id).delete();
+    res.json({ message: 'Project deleted successfully', deleted: { id } });
   } catch (err) {
     res.status(500).json({ error: err.message, status: 'failed' });
   }

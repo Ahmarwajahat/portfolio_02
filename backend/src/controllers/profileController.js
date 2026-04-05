@@ -1,59 +1,35 @@
-const supabase = require('../config/supabase');
+const { db } = require('../config/firebase');
 
-// Get the profile (returns the first row, since we only have one admin profile)
 const getProfile = async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('profile')
-      .select('*')
-      .limit(1)
-      .single();
-
-    if (error && error.code !== 'PGRST116') { // Ignore "no rows returned" error
-      return res.status(500).json({ error: error.message });
+    const snapshot = await db.collection('profile').limit(1).get();
+    if (snapshot.empty) {
+      return res.status(200).json({});
     }
-    res.status(200).json(data || {});
+    const doc = snapshot.docs[0];
+    res.status(200).json({ id: doc.id, ...doc.data() });
   } catch (err) {
     res.status(500).json({ error: 'Server error fetching profile' });
   }
 };
 
-// Update the profile (or insert if it doesn't exist)
 const updateProfile = async (req, res) => {
   try {
     const profileData = req.body;
+    const snapshot = await db.collection('profile').limit(1).get();
     
-    // Check if a profile exists
-    const { data: existingProfiles, error: checkError } = await supabase
-      .from('profile')
-      .select('id')
-      .limit(1);
-
-    if (checkError) {
-       return res.status(500).json({ error: checkError.message });
-    }
-
-    let result;
-    if (existingProfiles && existingProfiles.length > 0) {
+    if (!snapshot.empty) {
       // Update existing
-      result = await supabase
-        .from('profile')
-        .update({ ...profileData, updated_at: new Date() })
-        .eq('id', existingProfiles[0].id)
-        .select();
+      const docRef = snapshot.docs[0].ref;
+      await docRef.update({ ...profileData, updated_at: new Date().toISOString() });
+      const updatedDoc = await docRef.get();
+      res.status(200).json({ id: updatedDoc.id, ...updatedDoc.data() });
     } else {
       // Insert new
-      result = await supabase
-        .from('profile')
-        .insert([{ ...profileData }])
-        .select();
+      const newDoc = { ...profileData, created_at: new Date().toISOString() };
+      const docRef = await db.collection('profile').add(newDoc);
+      res.status(200).json({ id: docRef.id, ...newDoc });
     }
-
-    if (result.error) {
-       return res.status(500).json({ error: result.error.message });
-    }
-    
-    res.status(200).json(result.data[0]);
   } catch (err) {
     res.status(500).json({ error: 'Server error updating profile' });
   }

@@ -20,7 +20,12 @@ const Login = () => {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/admin/dashboard');
     } catch (err) {
-      setError('Invalid email or password. Access Denied.');
+      console.error("Firebase Login Error:", err);
+      if (err.code === 'auth/unauthorized-domain') {
+        setError('Error: This domain is not authorized in Firebase Auth. Please add it in Firebase Console.');
+      } else {
+        setError('Invalid email or password. Access Denied.');
+      }
     } finally {
       setLoading(false);
     }

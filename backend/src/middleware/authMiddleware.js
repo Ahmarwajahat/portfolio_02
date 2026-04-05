@@ -1,30 +1,5 @@
-const admin = require('firebase-admin');
+const { admin } = require('../config/firebase');
 require('dotenv').config();
-
-// Initialize Firebase Admin with credentials from env
-if (!admin.apps.length) {
-  try {
-    const serviceAccountStr = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-    if (serviceAccountStr) {
-      const serviceAccount = typeof serviceAccountStr === 'string' 
-        ? JSON.parse(serviceAccountStr) 
-        : serviceAccountStr;
-        
-      if (serviceAccount.private_key) {
-        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-      }
-        
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-      });
-      console.log('✅ Firebase Admin Initialized successfully');
-    } else {
-      console.warn("⚠️ Firebase Admin SDK not initialized. Provide FIREBASE_SERVICE_ACCOUNT_JSON in .env");
-    }
-  } catch (error) {
-    console.error("❌ Failed to initialize Firebase Admin:", error.message);
-  }
-}
 
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;

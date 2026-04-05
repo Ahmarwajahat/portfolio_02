@@ -1,9 +1,9 @@
-const supabase = require('../config/supabase');
+const { db } = require('../config/firebase');
 
 const getLogs = async (req, res) => {
   try {
-    const { data, error } = await supabase.from('classified_logs').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
+    const snapshot = await db.collection('classified_logs').orderBy('created_at', 'desc').get();
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message, status: 'failed' });
@@ -13,12 +13,9 @@ const getLogs = async (req, res) => {
 const createLog = async (req, res) => {
   try {
     const { title, description, image_url, date, category, link } = req.body;
-    const { data, error } = await supabase
-      .from('classified_logs')
-      .insert([{ title, description, image_url, date, category, link }])
-      .select();
-    if (error) throw error;
-    res.status(201).json({ message: 'Log created', data: data[0] });
+    const newDoc = { title, description, image_url, date, category, link, created_at: new Date().toISOString() };
+    const docRef = await db.collection('classified_logs').add(newDoc);
+    res.status(201).json({ message: 'Log created', data: { id: docRef.id, ...newDoc } });
   } catch (err) {
     res.status(500).json({ error: err.message, status: 'failed' });
   }
@@ -28,13 +25,10 @@ const updateLog = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
-    const { data, error } = await supabase
-      .from('classified_logs')
-      .update(updates)
-      .eq('id', id)
-      .select();
-    if (error) throw error;
-    res.json({ message: 'Log updated', data: data[0] });
+    const docRef = db.collection('classified_logs').doc(id);
+    await docRef.update(updates);
+    const updatedDoc = await docRef.get();
+    res.json({ message: 'Log updated', data: { id: updatedDoc.id, ...updatedDoc.data() } });
   } catch (err) {
     res.status(500).json({ error: err.message, status: 'failed' });
   }
@@ -43,9 +37,8 @@ const updateLog = async (req, res) => {
 const deleteLog = async (req, res) => {
   try {
     const { id } = req.params;
-    const { data, error } = await supabase.from('classified_logs').delete().eq('id', id).select();
-    if (error) throw error;
-    res.json({ message: 'Log deleted', deleted: data[0] });
+    await db.collection('classified_logs').doc(id).delete();
+    res.json({ message: 'Log deleted', deleted: { id } });
   } catch (err) {
     res.status(500).json({ error: err.message, status: 'failed' });
   }
