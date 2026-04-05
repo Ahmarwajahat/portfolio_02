@@ -12,10 +12,10 @@ const getLogs = async (req, res) => {
 
 const createLog = async (req, res) => {
   try {
-    const { title, description, image_url, date } = req.body;
+    const { title, description, image_url, date, category, link } = req.body;
     const { data, error } = await supabase
       .from('classified_logs')
-      .insert([{ title, description, image_url, date }])
+      .insert([{ title, description, image_url, date, category, link }])
       .select();
     if (error) throw error;
     res.status(201).json({ message: 'Log created', data: data[0] });
